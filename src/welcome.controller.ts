@@ -1,5 +1,5 @@
 import {Controller, Get} from '@nestjs/common';
-import {WelcomeService} from './welcome.service';
+import {WelcomeService} from './welcome.service.js';
 
 @Controller('welcome')
 export class WelcomeController {
@@ -7,6 +7,6 @@ export class WelcomeController {
 
     @Get()
     getWelcome(): {message:string} {
-        return this.welcomeSerive.getMessage();
+        return this.welcomeService.getMessage();
     }
 }
