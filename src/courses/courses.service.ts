@@ -5,6 +5,15 @@ type Course = {
     title: string;
     level: string;
 };
+type CreateCourseInput = {
+    title: string;
+    level: string;
+};
+
+type UpdateCourseInput = {
+    title?: string;
+    level?: string;
+};
 
 @Injectable()
 export class CoursesService {
