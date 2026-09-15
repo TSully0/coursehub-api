@@ -1,19 +1,19 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { CoursesService } from './courses.service.js';
-import { CreateCourseDto } from './dto/create-course.dto.js';
+import { CoursesService, ParseIdPipe } from './courses.service.js';
+import { CreateCourseDto, FilterCourseDto } from './dto/create-course.dto.js';
 
 @Controller('courses')
 export class CoursesController {
     constructor(private readonly coursesService: CoursesService) {}
 
     @Get()
-    findAll(@Query('level') level?: string) {
-        return this.coursesService.findAll(level);
+    findAll(@Query() filters: FilterCourseDto) {
+        return this.coursesService.findAll(filters);
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
-        return this.coursesService.findOne(Number(id));
+    findOne(@Param('id', ParseIdPipe) id: number) {
+        return this.coursesService.findOne(id);
     }
 
     @Post()
@@ -23,14 +23,15 @@ export class CoursesController {
 
     @Patch(':id')
     update(
-        @Param('id') id: string,
-        @Body() body: { title?: string; level?: string },
+        @Param('id', ParseIdPipe) id: number,
+        @Body() updateCourseDto: CreateCourseDto,
     ) {
-    return this.coursesService.update(Number(id), body);
+        return this.coursesService.update(id, updateCourseDto);
     }
 
+
     @Delete(':id')
-    remove(@Param('id') id: string) {
-        return this.coursesService.remove(Number(id));
+    remove(@Param('id', ParseIdPipe) id: number) {
+        return this.coursesService.remove(id);
     }
 }

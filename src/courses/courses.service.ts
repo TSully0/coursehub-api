@@ -1,55 +1,101 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto.js';
+import { PipeTransform, BadRequestException } from '@nestjs/common';
 
 type Course = {
     id: number;
-    title: string;
-    level: string;
+    name: string;
+    email:string;
+    age: number;
+    career: string;
+    semester: number;
+    isActive: boolean;
 };
 type CreateCourseInput = {
-    title: string;
-    level: string;
+    name: string;
+    email:string;
+    age: number;
+    career: string;
+    semester: number;
+    isActive: boolean;
 };
 
 type UpdateCourseInput = {
-    title?: string;
-    level?: string;
+    name?: string;
+    email?:string;
+    age?: number;
+    career?: string;
+    semester?: number;
+    isActive: boolean;
 };
+
+
+
+@Injectable()
+export class ParseIdPipe implements PipeTransform<string, number> {
+    transform(value: string): number {
+    const val = parseInt(value, 10);
+    if (isNaN(val) || val <= 0) {
+        throw new BadRequestException(`El ID '${value}' debe ser un número entero positivo válido`);
+    }
+    return val;
+    }
+}
 
 @Injectable()
 export class CoursesService {
     private nextId = 4;
     private readonly courses: Course[] = [
-        { id: 1, title: 'NestJS Fundamentals', level: 'beginner' },
-        { id: 2, title: 'REST APIs with NestJS', level: 'beginner' },
-        { id: 3, title: 'NestJS Architecture', level: 'intermediate' },
+        { id: 1, name: 'Sully', email: 'sully@gmail.com', age: 20, career: 'Software', semester: 5, isActive: true },
+        { id: 1, name: 'Luisa', email: 'luisa@gmail.com', age: 21, career: 'Agropecuaria', semester: 2 , isActive: false},
+        { id: 1, name: 'Danna', email: 'danna@gmail.com', age: 19, career: 'Derecho', semester: 6 , isActive: false }   
     ];
 
-    findAll(level?: string): Course[] {
-        if (!level) {
-            return this.courses;
+    findAll(filters: CreateCourseDto): Course[] {
+    let result = this.courses;
+
+    if (filters.career) {
+        result = result.filter(s => s.career.toLowerCase() === filters.career.toLowerCase());
+    }
+    if (filters.semester !== undefined) {
+        result = result.filter(s => s.semester === filters.semester);
+    }
+    if (filters.isActive !== undefined) {
+        result = result.filter(s => s.isActive === filters.isActive);
     }
 
-    return this.courses.filter((course) => course.level === level);
+    return result;
     }
 
-    findOne(id: number): Course | undefined {
-        return this.courses.find((course) => course.id === id);
+    findOne(id: number): Course {
+    const student = this.courses.find(s => s.id === id);
+    if (!student) {
+        throw new NotFoundException(`Estudiante con ID ${id} no encontrado`);
+    }
+    return student;
     }
     create(createCourseDto: CreateCourseDto): Course {
-        const course = { id: this.nextId++, ...createCourseDto };
-        this.courses.push(course)
+        const emailExists = this.courses.some(s => s.email === dto.email);
+        if (emailExists) {
+            throw new ConflictException('El correo ya esta registrado')
+        }
+
+        const course: Course = {
+            id: this.nextId++,
+            ...dto,
+        };
+        this.courses.push(course);
         return course;
     };
 
-    update(id: number, input: UpdateCourseInput): Course | undefined {
+    update(id: number, dto: UpdateCourseInput): Course | undefined {
         const course = this.findOne(id);
 
-    if (!course) {
-        return undefined;
+    if (dto.email && dto.email !== course.email) {
+
     }
 
-    Object.assign(course, input);
+    Object.assign(course, oninput);
     return course;
     }
 
