@@ -13,7 +13,7 @@ export class CoursesController {
 
     @Get(':id')
     findOne(@Param('id') id: string) {
-        return this.coursesService.findOne(Number(id));
+        return this.coursesService.findOne(id);
     }
 
     @Post()
@@ -26,11 +26,11 @@ export class CoursesController {
         @Param('id') id: string,
         @Body() body: { title?: string; level?: string },
     ) {
-    return this.coursesService.update(Number(id), body);
+        return this.coursesService.update(id, body as CreateCourseDto);
     }
 
     @Delete(':id')
     remove(@Param('id') id: string) {
-        return this.coursesService.remove(Number(id));
+        return this.coursesService.remove(id);
     }
 }

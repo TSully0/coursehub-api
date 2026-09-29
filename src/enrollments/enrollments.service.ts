@@ -26,7 +26,7 @@ create(dto: CreateEnrollmentDto): Enrollment {
     throw new BadRequestException('El estudiante con ID se encuentra inactivo');
     }
 
-    this.coursesService.findOne(dto.courseId);
+    this.coursesService.findOne(String(dto.courseId));
 
     const exists = this.enrollments.some(
     (e) => e.studentId === dto.studentId && e.courseId === dto.courseId,
@@ -64,7 +64,7 @@ findAll(filters: FilterEnrollmentDto): Enrollment[] {
     }
 
     findByCourse(courseId: number): Enrollment[] {
-    this.coursesService.findOne(courseId);
+    this.coursesService.findOne(String(courseId));
     return this.enrollments.filter((e) => e.courseId === courseId);
     }
 
