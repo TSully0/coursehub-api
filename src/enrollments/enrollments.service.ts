@@ -19,21 +19,20 @@ export class EnrollmentsService {
     private readonly coursesService: CoursesService,
 ) {}
 
-create(dto: CreateEnrollmentDto): Enrollment {
-    const student = this.studentsService.findOne(dto.studentId);
+async create(dto: CreateEnrollmentDto): Promise<Enrollment> {
+const student = await this.studentsService.findOne(dto.studentId);
+await this.coursesService.findOne(String(dto.courseId));
 
-    if (!student.isActive) {
-    throw new BadRequestException('El estudiante con ID se encuentra inactivo');
-    }
+if (!student.isActive) {
+    throw new BadRequestException(`El estudiante ${dto.studentId} está inactivo`);
+}
 
-    this.coursesService.findOne(String(dto.courseId));
-
-    const exists = this.enrollments.some(
+const exists = this.enrollments.some(
     (e) => e.studentId === dto.studentId && e.courseId === dto.courseId,
-    );
-    if (exists) {
+);
+if (exists) {
     throw new ConflictException('La combinación de estudiante y curso ya existe');
-    }
+}
 
     const enrollment: Enrollment = {
         id: this.nextId++,
