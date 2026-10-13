@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'; // 1
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'; // 1
+import type { Relation } from 'typeorm';
+import { Enrollment } from '../../enrollments/entities/enrollments.entity.js';
 
 @Entity('courses') // 2
 export class Course { // 3
@@ -10,4 +12,7 @@ export class Course { // 3
 
   @Column() // 6
     level: string;
+  
+  @OneToMany(() => Enrollment, (enrollmnet) => enrollmnet.course)
+  enrollments: Relation<Enrollment[]>;
 }

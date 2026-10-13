@@ -1,4 +1,5 @@
 import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, Unique } from 'typeorm';
+import type { Relation } from 'typeorm';
 import { Student } from '../../students/entities/student.entity.js';
 import { Course } from '../../courses/entities/courses.entity.js';
 
@@ -10,9 +11,9 @@ export class Enrollment {
 
     @ManyToOne(() => Student, { nullable: false })
     @JoinColumn({ name: 'studentId' })
-    student: Student;
+    student: Relation<Student>;
 
     @ManyToOne(() => Course, { nullable: false })
     @JoinColumn({ name: 'courseId' })
-    course: Course;
+    course: Relation<Course>;
 }
