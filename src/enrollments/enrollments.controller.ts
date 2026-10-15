@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service.js';
-import { CreateEnrollmentDto, FilterEnrollmentDto } from './dto/enrollment.dto.js';
+import { CreateEnrollmentDto, EnrollmentsQueryDto } from './dto/enrollment.dto.js';
 
 @Controller('enrollments')
 export class EnrollmentsController {
@@ -12,8 +12,8 @@ export class EnrollmentsController {
     }
 
     @Get()
-    findAll(@Query() filters: FilterEnrollmentDto) {
-    return this.enrollmentsService.findAll(filters);
+    findAll(@Query() query: EnrollmentsQueryDto) {
+    return this.enrollmentsService.findAll(query);
     }
 
     @Delete(':id')

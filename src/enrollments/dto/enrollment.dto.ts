@@ -1,5 +1,12 @@
-import { IsInt, Min, IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
+import { Type } from 'class-transformer';
+import {
+    IsBooleanString,
+    IsInt,
+    IsOptional,
+    IsString,
+    Max,
+    Min,
+} from 'class-validator';
 
 export class CreateEnrollmentDto {
     @IsInt()
@@ -11,16 +18,37 @@ export class CreateEnrollmentDto {
     courseId: number;
 }
 
-export class FilterEnrollmentDto {
+export class EnrollmentsQueryDto {
     @IsOptional()
-    @Transform(({ value }) => (value ? parseInt(value, 10) : undefined))
+    @IsString()
+    search?: string;
+
+    @IsOptional()
+    @Type(() => Number)
     @IsInt()
     @Min(1)
     studentId?: number;
 
     @IsOptional()
-    @Transform(({ value }) => (value ? parseInt(value, 10) : undefined))
+    @Type(() => Number)
     @IsInt()
     @Min(1)
     courseId?: number;
+
+    @IsOptional()
+    @IsBooleanString()
+    activeOnly?: string;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    page = 1;
+
+    @IsOptional()
+    @Type(() => Number)
+    @IsInt()
+    @Min(1)
+    @Max(50)
+    limit = 10;
 }
