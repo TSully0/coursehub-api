@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CoursesService } from './courses.service.js';
-import { CreateCourseDto } from './dto/create-course.dto.js';
+import { CoursesQueryDto, CreateCourseDto, UpdateCourseDto } from './dto/courses.dto.js';
 
 @Controller('courses')
 export class CoursesController {
     constructor(private readonly coursesService: CoursesService) {}
 
     @Get()
-    findAll(@Query('level') level?: string) {
-        return this.coursesService.findAll(level);
+    findAll(@Query() query: CoursesQueryDto) {
+        return this.coursesService.findAll(query);
     }
 
     @Get(':id')
@@ -24,9 +24,9 @@ export class CoursesController {
     @Patch(':id')
     update(
         @Param('id') id: string,
-        @Body() body: { title?: string; level?: string },
+        @Body() body: UpdateCourseDto,
     ) {
-        return this.coursesService.update(id, body as CreateCourseDto);
+        return this.coursesService.update(id, body);
     }
 
     @Delete(':id')
