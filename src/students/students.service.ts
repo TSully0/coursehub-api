@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { CreateStudentDto, UpdateStudentDto, FilterStudentDto } from './dto/student.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { Student } from './entities/student.entity.js';
 
 @Injectable()
@@ -13,7 +13,11 @@ export class StudentsService {
     ) {}
 
     findAll(filters: FilterStudentDto): Promise<Student[]> {
-        return this.studentsRepository.find({ where: { ...filters } });
+        const where: FindOptionsWhere<Student> = {};
+        if (filters.career !== undefined) where.career = filters.career;
+        if (filters.semester !== undefined) where.semester = filters.semester;
+        if (filters.isActive !== undefined) where.isActive = filters.isActive;
+        return this.studentsRepository.find({ where });
     }
 
     async findOne(id: number): Promise<Student> {

@@ -8,21 +8,46 @@ import { StudentsModule } from './students/students.module.js';
 import { EnrollmentsModule } from './enrollments/enrollments.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import Joi from 'joi';
 
 @Module({
   imports: [
     CoursesModule,
     StudentsModule,
     EnrollmentsModule,
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: 'src/.env' }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['.env', 'src/.env'],
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid('development', 'test', 'production')
+          .default('development'),
+        PORT: Joi.number().port().default(3000),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().port().default(5432),
+        DB_NAME: Joi.string().required(),
+        DB_USER: Joi.string().required(),
+        DB_PASSWORD: Joi.string().allow('').required(),
+      })
+        .custom((config, helpers) => {
+          if (config.NODE_ENV !== 'development' && config.DB_PASSWORD.length === 0) {
+            return helpers.error('any.invalid');
+          }
+          return config;
+        })
+        .messages({
+          'any.invalid': 'DB_PASSWORD must be non-empty outside development',
+        }),
+    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: 'postgres', host: config.getOrThrow('DATABASE_HOST'),
-        port: Number(config.getOrThrow('DATABASE_PORT')),
-        username: config.getOrThrow('DATABASE_USER'),
-        password: config.getOrThrow('DATABASE_PASSWORD'),
-        database: config.getOrThrow('DATABASE_NAME'),
+        type: 'postgres',
+        host: config.getOrThrow<string>('DB_HOST'),
+        port: config.getOrThrow<number>('DB_PORT'),
+        username: config.getOrThrow<string>('DB_USER'),
+        password: config.getOrThrow<string>('DB_PASSWORD'),
+        database: config.getOrThrow<string>('DB_NAME'),
         autoLoadEntities: true, synchronize: true,
       }),
     }),
