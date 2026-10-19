@@ -8,6 +8,8 @@ import { StudentsModule } from './students/students.module.js';
 import { EnrollmentsModule } from './enrollments/enrollments.module.js';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { UsersModule } from './users/users.module.js';
+import { AuthModule } from './auth/auth.module.js';
 import Joi from 'joi';
 
 @Module({
@@ -52,6 +54,8 @@ import Joi from 'joi';
         synchronize: config.getOrThrow<string>('NODE_ENV') === 'development',
       }),
     }),
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController, WelcomeController],
   providers: [AppService, WelcomeService],
