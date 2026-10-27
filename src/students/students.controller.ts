@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, ParseIntPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { StudentsService } from './students.service.js';
 import { CreateStudentDto, UpdateStudentDto, FilterStudentDto, ToggleStudentActiveDto } from './dto/student.dto.js';
 
@@ -17,11 +18,13 @@ export class StudentsController {
     }
 
     @Post()
+    @UseGuards(JwtAuthGuard)
     create(@Body() createDto: CreateStudentDto) {
     return this.studentsService.create(createDto);
     }
 
     @Patch(':id')
+    @UseGuards(JwtAuthGuard)
     update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateDto: UpdateStudentDto,
@@ -30,6 +33,7 @@ export class StudentsController {
     }
 
     @Patch(':id/active')
+    @UseGuards(JwtAuthGuard)
     toggleActive(
     @Param('id', ParseIntPipe) id: number,
     @Body() toggleDto: ToggleStudentActiveDto,
@@ -38,6 +42,7 @@ export class StudentsController {
     }
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard)
     remove(@Param('id', ParseIntPipe) id: number) {
     return this.studentsService.remove(id);
     }

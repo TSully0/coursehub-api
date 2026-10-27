@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { CoursesService } from './courses.service.js';
 import { CoursesQueryDto, CreateCourseDto, UpdateCourseDto } from './dto/courses.dto.js';
 
@@ -17,11 +18,13 @@ export class CoursesController {
     }
 
     @Post()
+    @UseGuards(JwtAuthGuard)
     create(@Body() createCourseDto: CreateCourseDto) {
         return this.coursesService.create(createCourseDto);
     }
 
     @Patch(':id')
+    @UseGuards(JwtAuthGuard)
     update(
         @Param('id') id: string,
         @Body() body: UpdateCourseDto,
@@ -30,6 +33,7 @@ export class CoursesController {
     }
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard)
     remove(@Param('id') id: string) {
         return this.coursesService.remove(id);
     }
