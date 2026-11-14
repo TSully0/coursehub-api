@@ -57,6 +57,14 @@ $ npm run test:e2e
 $ npm run test:cov
 ```
 
+## Roles y propiedad de los cursos
+
+Los usuarios tienen uno de estos tres roles: `admin`, `teacher` o `student`. Al registrarse, el usuario obtiene siempre el rol de `student`; la asignación de un rol distinto debe realizarse mediante un proceso administrativo autorizado. Los tokens de inicio de sesión incluyen el rol del usuario.
+
+Al crear un curso, el sistema registra al usuario autenticado como su propietario. Los profesores pueden modificar sus propios cursos, los administradores pueden modificar cualquier curso y solo los administradores pueden eliminar cursos. Es posible que algunos cursos existentes no tengan un propietario; en tales casos, solo un administrador puede modificarlos.
+
+La columna de rol tiene como valor predeterminado `student`, y la relación de propiedad de un curso admite valores nulos (`nullable`) para preservar los registros de cursos ya existentes. La sincronización del esquema mediante TypeORM solo está habilitada en el entorno de desarrollo; en el entorno de producción, es necesario realizar una migración de la base de datos para añadir la columna de tipo enumerado `users.role` y la clave foránea `courses.createdByUserId` (que permite valores nulos) antes de implementar este cambio.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

@@ -1,6 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'; // 1
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, RelationId } from 'typeorm'; // 1
 import type { Relation } from 'typeorm';
 import { Enrollment } from '../../enrollments/entities/enrollments.entity.js';
+import { User } from '../../users/entities/user.entity.js';
 
 @Entity('courses') // 2
 export class Course { // 3
@@ -15,4 +16,11 @@ export class Course { // 3
   
   @OneToMany(() => Enrollment, (enrollmnet) => enrollmnet.course)
   enrollments: Relation<Enrollment[]>;
+
+  @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'createdByUserId' })
+  createdBy: Relation<User> | null;
+
+  @RelationId((course: Course) => course.createdBy)
+  createdByUserId: number | null;
 }

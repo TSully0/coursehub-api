@@ -5,6 +5,7 @@ import { AuthService } from './auth.service.js';
 import { UsersService } from '../users/users.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '../users/user-role.enum.js';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -41,6 +42,7 @@ describe('AuthService', () => {
       id: 1,
       email: 'ana@example.com',
       passwordHash: 'hashed-password',
+      role: UserRole.STUDENT,
       createdAt: new Date(),
     };
     usersService.create.mockResolvedValue(user);
@@ -58,6 +60,7 @@ describe('AuthService', () => {
     expect(result).toEqual({
       id: user.id,
       email: user.email,
+      role: user.role,
       createdAt: user.createdAt,
     });
   });
@@ -69,6 +72,7 @@ describe('AuthService', () => {
       id: 1,
       email: 'ana@example.com',
       passwordHash,
+      role: UserRole.STUDENT,
       createdAt: new Date(),
     };
     usersService.findByEmailWithPassword.mockResolvedValue(user);
@@ -84,8 +88,14 @@ describe('AuthService', () => {
       user: {
         id: user.id,
         email: user.email,
+        role: user.role,
         createdAt: user.createdAt,
       },
+    });
+    expect(jwtService.signAsync).toHaveBeenCalledWith({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
     });
   });
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module.js';
+import { RolesGuard } from '../auth/guards/roles.guard.js';
 import { Course } from './entities/courses.entity.js';
 import { CoursesController } from './courses.controller.js';
 import { CoursesService } from './courses.service.js';
@@ -13,7 +14,7 @@ import { CoursesService } from './courses.service.js';
     PassportModule.register({ defaultStrategy: 'jwt' }),
   ],
   controllers: [CoursesController],
-  providers: [CoursesService],
+  providers: [CoursesService, RolesGuard],
   exports: [CoursesService],
 })
 export class CoursesModule {}

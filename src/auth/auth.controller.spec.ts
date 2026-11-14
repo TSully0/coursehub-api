@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller.js';
 import { AuthService } from './auth.service.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { JwtStrategy } from './strategies/jwt.strategy.js';
+import { UserRole } from '../users/user-role.enum.js';
 
 describe('AuthController', () => {
   let app: INestApplication;
@@ -44,6 +45,6 @@ describe('AuthController', () => {
       .get('/auth/me')
       .set('Authorization', `Bearer ${token}`)
       .expect(200)
-      .expect({ id: 1, email: 'ana@example.com' });
+      .expect({ id: 1, email: 'ana@example.com', role: UserRole.STUDENT });
   });
 });
