@@ -65,6 +65,14 @@ Al crear un curso, el sistema registra al usuario autenticado como su propietari
 
 La columna de rol tiene como valor predeterminado `student`, y la relación de propiedad de un curso admite valores nulos (`nullable`) para preservar los registros de cursos ya existentes. La sincronización del esquema mediante TypeORM solo está habilitada en el entorno de desarrollo; en el entorno de producción, es necesario realizar una migración de la base de datos para añadir la columna de tipo enumerado `users.role` y la clave foránea `courses.createdByUserId` (que permite valores nulos) antes de implementar este cambio.
 
+## CORS, límites de solicitudes y seguridad de transporte
+
+CORS permite que los clientes web autorizados lean respuestas desde el navegador; no es un mecanismo de autorización. JWT y los guards de roles siguen protegiendo las rutas sin importar el origen. Configura `CORS_ORIGINS` con una lista separada por comas de orígenes exactos, sin rutas ni barras finales. En desarrollo el valor predeterminado es `http://localhost:5173`.
+
+La API limita las solicitudes a 20 por minuto por cliente y `POST /auth/login` a cinco por minuto. Al superar el límite, responde `429 Too Many Requests`. 
+
+En producción, todo el tráfico debe usar HTTPS. TLS puede terminar en un proxy, balanceador o plataforma de alojamiento de confianza; en desarrollo local se permite `http://localhost`. 
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.

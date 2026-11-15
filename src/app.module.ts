@@ -11,12 +11,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import Joi from 'joi';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     CoursesModule,
     StudentsModule,
     EnrollmentsModule,
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 20 }]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env', 'src/.env'],
@@ -24,6 +27,24 @@ import Joi from 'joi';
         NODE_ENV: Joi.string()
           .valid('development', 'test', 'production')
           .default('development'),
+        CORS_ORIGINS: Joi.string()
+          .custom((value, helpers) => {
+            const origins = value.split(',').map((origin: string) => origin.trim());
+            if (origins.some((origin: string) => !origin || origin === '*')) {
+              return helpers.error('any.invalid');
+            }
+            return origins.join(',');
+          })
+          .when('NODE_ENV', {
+            is: 'production',
+            // Joi uses `then` as the branch key for a conditional schema.
+            // oxlint-disable-next-line unicorn/no-thenable
+            then: Joi.required(),
+            otherwise: Joi.string().default('http://localhost:5173'),
+          })
+          .messages({
+            'any.invalid': 'CORS_ORIGINS must contain explicit origins and cannot include *',
+          }),
         PORT: Joi.number().port().default(3000),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().port().default(5432),
@@ -60,6 +81,13 @@ import Joi from 'joi';
     AuthModule,
   ],
   controllers: [AppController, WelcomeController],
-  providers: [AppService, WelcomeService],
+  providers: [
+    AppService,
+    WelcomeService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

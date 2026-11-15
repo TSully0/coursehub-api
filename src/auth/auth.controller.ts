@@ -14,6 +14,7 @@ import { RegisterDto } from './dto/register.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 import { AuthenticatedUser } from './types/jwt-payload.type.js';
+import { Throttle } from '@nestjs/throttler';
 
 type RequestWithUser = Request & { user: AuthenticatedUser };
 
@@ -35,6 +36,7 @@ export class AuthController {
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
+    @Throttle({ default: { limit: 5, ttl: 60_000 } })
     login(@Body() dto: LoginDto) {
     return this.authService.login(dto);
 }
