@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ForbiddenException } from '@nestjs/common';
 import { UserRole } from '../users/user-role.enum.js';
 import { CoursesService } from './courses.service.js';
 import { Course } from './entities/courses.entity.js';
+import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 describe('CoursesService', () => {
   let service: CoursesService;
@@ -19,12 +19,14 @@ describe('CoursesService', () => {
     save: vi.fn(),
     remove: vi.fn(),
   };
+  const updateCourse = { execute: vi.fn() };
 
   beforeEach(async () => {
     coursesRepository.findOneBy.mockReset();
     coursesRepository.create.mockReset();
     coursesRepository.save.mockReset();
     coursesRepository.remove.mockReset();
+    updateCourse.execute.mockReset();
     coursesRepository.findAndCount.mockReset().mockImplementation(({ skip = 0, take = 10 }) =>
       Promise.resolve([courses.slice(skip, skip + take), courses.length]),
     );
@@ -32,6 +34,7 @@ describe('CoursesService', () => {
       providers: [
         CoursesService,
         { provide: getRepositoryToken(Course), useValue: coursesRepository },
+        { provide: UpdateCourseUseCase, useValue: updateCourse },
       ],
     }).compile();
 
@@ -124,38 +127,15 @@ describe('CoursesService', () => {
     expect(result).toBe(course);
   });
 
-  it('allows the course owner to update their course', async () => {
+  it('delegates course updates to the update use case', async () => {
     const actor = { id: 12, email: 'teacher@example.com', role: UserRole.TEACHER };
-    const course = { id: 4, title: 'Before', level: 'beginner', createdByUserId: actor.id } as Course;
-    coursesRepository.findOneBy.mockResolvedValue(course);
-    coursesRepository.save.mockImplementation(async (savedCourse) => savedCourse);
+    const changes = { title: 'After' };
+    const updated = { id: 4, ...changes } as Course;
+    updateCourse.execute.mockResolvedValue(updated);
 
-    await expect(service.update(4, { title: 'After' }, actor)).resolves.toMatchObject({
-      title: 'After',
-      createdByUserId: actor.id,
-    });
-    expect(coursesRepository.save).toHaveBeenCalledWith(course);
-  });
-
-  it('rejects updates by a non-owner who is not an administrator', async () => {
-    const actor = { id: 12, email: 'teacher@example.com', role: UserRole.TEACHER };
-    const course = { id: 4, title: 'Before', level: 'beginner', createdByUserId: 99 } as Course;
-    coursesRepository.findOneBy.mockResolvedValue(course);
-
-    await expect(service.update(4, { title: 'After' }, actor)).rejects.toBeInstanceOf(
-      ForbiddenException,
-    );
+    await expect(service.update(4, changes, actor)).resolves.toBe(updated);
+    expect(updateCourse.execute).toHaveBeenCalledWith(4, changes, actor);
+    expect(coursesRepository.findOneBy).not.toHaveBeenCalled();
     expect(coursesRepository.save).not.toHaveBeenCalled();
-  });
-
-  it('allows administrators to update courses owned by another user', async () => {
-    const admin = { id: 12, email: 'admin@example.com', role: UserRole.ADMIN };
-    const course = { id: 4, title: 'Before', level: 'beginner', createdByUserId: 99 } as Course;
-    coursesRepository.findOneBy.mockResolvedValue(course);
-    coursesRepository.save.mockResolvedValue(course);
-
-    await expect(service.update(4, { title: 'After' }, admin)).resolves.toMatchObject({
-      title: 'After',
-    });
   });
 });

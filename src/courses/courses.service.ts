@@ -1,16 +1,17 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsOrder, Repository } from 'typeorm';
 import { AuthenticatedUser } from '../auth/types/jwt-payload.type.js';
-import { UserRole } from '../users/user-role.enum.js';
 import { CoursesQueryDto, CreateCourseDto, UpdateCourseDto } from './dto/courses.dto.js';
 import { Course } from './entities/courses.entity.js';
+import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 @Injectable()
 export class CoursesService {
     constructor(
         @InjectRepository(Course)
-        private readonly coursesRepository: Repository<Course>
+        private readonly coursesRepository: Repository<Course>,
+        private readonly updateCourse: UpdateCourseUseCase,
     ) {}
 
     async findAll(query: CoursesQueryDto) {
@@ -52,16 +53,8 @@ export class CoursesService {
     });
     return this.coursesRepository.save(course);
     }
-
     async update(id: number, dto: UpdateCourseDto, actor: AuthenticatedUser) {
-    const course = await this.findOne(id);
-    const canManageAny = actor.role === UserRole.ADMIN;
-    const isOwner = course.createdByUserId === actor.id;
-    if (!canManageAny && !isOwner) {
-        throw new ForbiddenException('You cannot modify this course');
-    }
-    Object.assign(course, dto);
-    return this.coursesRepository.save(course);
+    return this.updateCourse.execute(id, dto, actor);
     }
 
     async remove(id: number) {
