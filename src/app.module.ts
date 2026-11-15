@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller.js';
 import { AppService } from './app.service.js';
 import { WelcomeController } from './welcome.controller.js';
@@ -11,8 +11,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module.js';
 import { AuthModule } from './auth/auth.module.js';
 import Joi from 'joi';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { HttpErrorFilter } from './common/filters/http-error.filter.js';
+import { RequestLoggerMiddleware } from './common/middleware/request-logger.middleware.js';
+import { TimingInterceptor } from './common/interceptors/timing.interceptor.js';
 
 @Module({
   imports: [
@@ -85,9 +88,23 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
     AppService,
     WelcomeService,
     {
+      provide: APP_FILTER,
+      useClass: HttpErrorFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TimingInterceptor,
+    },
+    {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer
+      .apply(RequestLoggerMiddleware)
+      .forRoutes({ path: '{*path}', method: RequestMethod.ALL });
+  }
+}

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard.js';
 import { Roles } from '../auth/decorators/roles.decorator.js';
@@ -20,7 +20,7 @@ export class CoursesController {
     }
 
     @Get(':id')
-    findOne(@Param('id') id: string) {
+    findOne(@Param('id', ParseIntPipe) id: number) {
         return this.coursesService.findOne(id);
     }
 
@@ -33,7 +33,7 @@ export class CoursesController {
     @Patch(':id')
     @UseGuards(JwtAuthGuard)
     update(
-        @Param('id') id: string,
+        @Param('id', ParseIntPipe) id: number,
         @Body() body: UpdateCourseDto,
         @Req() request: RequestWithUser,
     ) {
@@ -43,7 +43,7 @@ export class CoursesController {
     @Delete(':id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles(UserRole.ADMIN)
-    remove(@Param('id') id: string) {
+    remove(@Param('id', ParseIntPipe) id: number) {
         return this.coursesService.remove(id);
     }
 }

@@ -130,7 +130,7 @@ describe('CoursesService', () => {
     coursesRepository.findOneBy.mockResolvedValue(course);
     coursesRepository.save.mockImplementation(async (savedCourse) => savedCourse);
 
-    await expect(service.update('4', { title: 'After' }, actor)).resolves.toMatchObject({
+    await expect(service.update(4, { title: 'After' }, actor)).resolves.toMatchObject({
       title: 'After',
       createdByUserId: actor.id,
     });
@@ -142,7 +142,7 @@ describe('CoursesService', () => {
     const course = { id: 4, title: 'Before', level: 'beginner', createdByUserId: 99 } as Course;
     coursesRepository.findOneBy.mockResolvedValue(course);
 
-    await expect(service.update('4', { title: 'After' }, actor)).rejects.toBeInstanceOf(
+    await expect(service.update(4, { title: 'After' }, actor)).rejects.toBeInstanceOf(
       ForbiddenException,
     );
     expect(coursesRepository.save).not.toHaveBeenCalled();
@@ -154,7 +154,7 @@ describe('CoursesService', () => {
     coursesRepository.findOneBy.mockResolvedValue(course);
     coursesRepository.save.mockResolvedValue(course);
 
-    await expect(service.update('4', { title: 'After' }, admin)).resolves.toMatchObject({
+    await expect(service.update(4, { title: 'After' }, admin)).resolves.toMatchObject({
       title: 'After',
     });
   });

@@ -16,6 +16,7 @@ describe('CoursesController', () => {
     const jwtSecret = 'test-secret-with-at-least-32-characters';
     const coursesService = {
         findAll: vi.fn(),
+        findOne: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         remove: vi.fn(),
@@ -105,6 +106,12 @@ describe('CoursesController', () => {
         expect(coursesService.findAll).not.toHaveBeenCalled();
     });
 
+    it('rejects a non-numeric course ID before calling the service', async () => {
+        await request(app.getHttpServer()).get('/courses/not-a-number').expect(400);
+
+        expect(coursesService.findOne).not.toHaveBeenCalled();
+    });
+
     it('rejects course creation without a token and does not modify data', async () => {
         await request(app.getHttpServer())
             .post('/courses')
@@ -155,7 +162,7 @@ describe('CoursesController', () => {
             .expect(200);
 
         expect(coursesService.update).toHaveBeenCalledWith(
-            '1',
+            1,
             { title: 'Updated course' },
             { id: 7, email: 'teacher@example.com', role: UserRole.TEACHER },
         );
@@ -186,6 +193,6 @@ describe('CoursesController', () => {
             .delete('/courses/1')
             .set('Authorization', `Bearer ${adminToken}`)
             .expect(200);
-        expect(coursesService.remove).toHaveBeenCalledWith('1');
+        expect(coursesService.remove).toHaveBeenCalledWith(1);
     });
 });

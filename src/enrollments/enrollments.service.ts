@@ -17,7 +17,7 @@ export class EnrollmentsService {
 
     async create(dto: CreateEnrollmentDto): Promise<Enrollment> {
         const student = await this.studentsService.findOne(dto.studentId);
-        await this.coursesService.findOne(String(dto.courseId));
+        await this.coursesService.findOne(dto.courseId);
 
         if (!student.isActive) {
             throw new BadRequestException(`El estudiante ${dto.studentId} está inactivo`);
@@ -85,7 +85,7 @@ export class EnrollmentsService {
     }
 
     async findByCourse(courseId: number): Promise<Enrollment[]> {
-        await this.coursesService.findOne(String(courseId));
+        await this.coursesService.findOne(courseId);
         return this.enrollmentsRepository.find({
             where: { course: { id: courseId } },
             relations: { student: true, course: true },

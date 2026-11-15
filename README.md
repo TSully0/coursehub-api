@@ -73,6 +73,10 @@ La API limita las solicitudes a 20 por minuto por cliente y `POST /auth/login` a
 
 En producción, todo el tráfico debe usar HTTPS. TLS puede terminar en un proxy, balanceador o plataforma de alojamiento de confianza; en desarrollo local se permite `http://localhost`. 
 
+## Registro y manejo de errores HTTP
+
+El middleware registra método, ruta sin query string, estado y duración; no registra headers, credenciales ni cuerpos de solicitud. El interceptor global mide la duración del handler y no intercepta ni oculta errores. El filtro global devuelve `statusCode`, `path`, `timestamp` y `message`; los errores inesperados responden con un mensaje genérico, mientras que los detalles internos se limitan a un registro controlado del tipo de excepción, método, ruta y estado. Los IDs de curso se validan con `ParseIntPipe` y el `ValidationPipe` global conserva la validación de cuerpos y consultas.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
