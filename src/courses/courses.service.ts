@@ -15,8 +15,16 @@ export class CoursesService {
     ) {}
 
     async findAll(query: CoursesQueryDto) {
-        const page = query.page ?? 1;
-        const limit = query.limit ?? 10;
+        const page =
+            Number.isInteger(query.page) && (query.page ?? 0) >= 1
+                ? query.page
+                : 1;
+        const limit =
+            Number.isInteger(query.limit) &&
+            (query.limit ?? 0) >= 1 &&
+            (query.limit ?? 0) <= 50
+                ? query.limit
+                : 10;
         const sortBy = query.sortBy ?? 'id';
         const order = query.order ?? 'ASC';
         const sortOrder: FindOptionsOrder<Course> = {

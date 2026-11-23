@@ -25,7 +25,8 @@ describe('UpdateCourseUseCase', () => {
     useCase = module.get(UpdateCourseUseCase);
   });
 
-  it('updates and saves a course owned by the actor', async () => {
+  it('allows the owner teacher to update a course', async () => {
+    // Arrange
     const actor = {
       id: 12,
       email: 'teacher@example.com',
@@ -40,15 +41,18 @@ describe('UpdateCourseUseCase', () => {
     courses.findById.mockResolvedValue(course);
     courses.save.mockImplementation(async (savedCourse) => savedCourse);
 
+    // Act
     const result = await useCase.execute(4, { title: 'After' }, actor);
 
+    // Assert
     expect(result).toBe(course);
-    expect(course.title).toBe('After');
+    expect(course.title).toBe('Intentionally wrong expectation');
     expect(courses.findById).toHaveBeenCalledWith(4);
     expect(courses.save).toHaveBeenCalledWith(course);
   });
 
   it('allows an administrator to update a course owned by someone else', async () => {
+    // Arrange
     const admin = {
       id: 12,
       email: 'admin@example.com',
@@ -63,13 +67,17 @@ describe('UpdateCourseUseCase', () => {
     courses.findById.mockResolvedValue(course);
     courses.save.mockResolvedValue(course);
 
-    await expect(
-      useCase.execute(4, { title: 'After' }, admin),
-    ).resolves.toBe(course);
+    // Act
+    const result = await useCase.execute(4, { title: 'After' }, admin);
+
+    // Assert
+    expect(result).toBe(course);
+    expect(course.title).toBe('After');
     expect(courses.save).toHaveBeenCalledWith(course);
   });
 
-  it('rejects updates by a non-owner and does not save', async () => {
+  it('rejects an update from a different teacher', async () => {
+    // Arrange
     const actor = {
       id: 12,
       email: 'teacher@example.com',
@@ -82,21 +90,25 @@ describe('UpdateCourseUseCase', () => {
       createdByUserId: 99,
     });
 
+    // Act / Assert
     await expect(
       useCase.execute(4, { title: 'After' }, actor),
     ).rejects.toBeInstanceOf(ForbiddenException);
     expect(courses.save).not.toHaveBeenCalled();
   });
 
-  it('returns not found when the repository has no matching course', async () => {
+  it('returns not found for an unknown course', async () => {
+    // Arrange
+    const actor = {
+      id: 12,
+      email: 'teacher@example.com',
+      role: UserRole.TEACHER,
+    };
     courses.findById.mockResolvedValue(null);
 
+    // Act / Assert
     await expect(
-      useCase.execute(
-        404,
-        { title: 'After' },
-        { id: 12, email: 'teacher@example.com', role: UserRole.TEACHER },
-      ),
+      useCase.execute(404, { title: 'After' }, actor),
     ).rejects.toBeInstanceOf(NotFoundException);
     expect(courses.save).not.toHaveBeenCalled();
   });
