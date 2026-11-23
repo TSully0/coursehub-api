@@ -7,12 +7,16 @@ import { AuthenticatedUser } from '../auth/types/jwt-payload.type.js';
 import { UserRole } from '../users/user-role.enum.js';
 import { CoursesService } from './courses.service.js';
 import { CoursesQueryDto, CreateCourseDto, UpdateCourseDto } from './dto/courses.dto.js';
+import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 type RequestWithUser = Request & { user: AuthenticatedUser };
 
 @Controller('courses')
 export class CoursesController {
-    constructor(private readonly coursesService: CoursesService) {}
+    constructor(
+        private readonly coursesService: CoursesService,
+        private readonly updateCourse: UpdateCourseUseCase,
+    ) {}
 
     @Get()
     findAll(@Query() query: CoursesQueryDto) {
@@ -37,7 +41,7 @@ export class CoursesController {
         @Body() body: UpdateCourseDto,
         @Req() request: RequestWithUser,
     ) {
-        return this.coursesService.update(id, body, request.user);
+        return this.updateCourse.execute(id, body, request.user);
     }
 
     @Delete(':id')

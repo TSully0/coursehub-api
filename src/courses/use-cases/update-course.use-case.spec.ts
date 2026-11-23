@@ -46,7 +46,7 @@ describe('UpdateCourseUseCase', () => {
 
     // Assert
     expect(result).toBe(course);
-    expect(course.title).toBe('Intentionally wrong expectation');
+    expect(course.title).toBe('After');
     expect(courses.findById).toHaveBeenCalledWith(4);
     expect(courses.save).toHaveBeenCalledWith(course);
   });

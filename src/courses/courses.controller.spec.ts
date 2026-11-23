@@ -1,4 +1,4 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ForbiddenException, INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -10,6 +10,7 @@ import { JwtStrategy } from '../auth/strategies/jwt.strategy.js';
 import { UserRole } from '../users/user-role.enum.js';
 import { CoursesController } from './courses.controller.js';
 import { CoursesService } from './courses.service.js';
+import { UpdateCourseUseCase } from './use-cases/update-course.use-case.js';
 
 describe('CoursesController', () => {
     let app: INestApplication;
@@ -20,6 +21,9 @@ describe('CoursesController', () => {
         create: vi.fn(),
         update: vi.fn(),
         remove: vi.fn(),
+    };
+    const updateCourse = {
+        execute: vi.fn(),
     };
 
     beforeEach(async () => {
@@ -34,6 +38,7 @@ describe('CoursesController', () => {
         });
         coursesService.create.mockReset();
         coursesService.update.mockReset();
+        updateCourse.execute.mockReset();
         coursesService.remove.mockReset().mockResolvedValue({ id: 1 });
         const module: TestingModule = await Test.createTestingModule({
             controllers: [CoursesController],
@@ -43,6 +48,7 @@ describe('CoursesController', () => {
             ],
             providers: [
                 { provide: CoursesService, useValue: coursesService },
+                { provide: UpdateCourseUseCase, useValue: updateCourse },
                 JwtAuthGuard,
                 RolesGuard,
                 JwtStrategy,
@@ -155,17 +161,46 @@ describe('CoursesController', () => {
             role: UserRole.TEACHER,
         });
 
+        updateCourse.execute.mockResolvedValue({
+            id: 1,
+            title: 'Updated course',
+        });
+
         await request(app.getHttpServer())
             .patch('/courses/1')
             .set('Authorization', `Bearer ${token}`)
             .send({ title: 'Updated course' })
             .expect(200);
 
-        expect(coursesService.update).toHaveBeenCalledWith(
+        expect(updateCourse.execute).toHaveBeenCalledWith(
             1,
             { title: 'Updated course' },
             { id: 7, email: 'teacher@example.com', role: UserRole.TEACHER },
         );
+    });
+
+    it('propagates a forbidden update error instead of returning success', async () => {
+        const token = app.get(JwtService).sign({
+            sub: 7,
+            email: 'student@example.com',
+            role: UserRole.STUDENT,
+        });
+        updateCourse.execute.mockRejectedValue(
+            new ForbiddenException('You cannot modify this course'),
+        );
+
+        await request(app.getHttpServer())
+            .patch('/courses/1')
+            .set('Authorization', `Bearer ${token}`)
+            .send({ title: 'Unauthorized update' })
+            .expect(403);
+
+        expect(updateCourse.execute).toHaveBeenCalledWith(
+            1,
+            { title: 'Unauthorized update' },
+            { id: 7, email: 'student@example.com', role: UserRole.STUDENT },
+        );
+        expect(coursesService.update).not.toHaveBeenCalled();
     });
 
     it('requires an administrator to delete a course', async () => {
