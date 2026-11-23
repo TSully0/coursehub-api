@@ -77,6 +77,16 @@ En producción, todo el tráfico debe usar HTTPS. TLS puede terminar en un proxy
 
 El middleware registra método, ruta sin query string, estado y duración; no registra headers, credenciales ni cuerpos de solicitud. El interceptor global mide la duración del handler y no intercepta ni oculta errores. El filtro global devuelve `statusCode`, `path`, `timestamp` y `message`; los errores inesperados responden con un mensaje genérico, mientras que los detalles internos se limitan a un registro controlado del tipo de excepción, método, ruta y estado. Los IDs de curso se validan con `ParseIntPipe` y el `ValidationPipe` global conserva la validación de cuerpos y consultas.
 
+## Pruebas
+
+Ejecuta el conjunto unitario del caso de uso de actualización con:
+
+```bash
+npm test -- update-course
+```
+
+Las pruebas usan Arrange/Act/Assert y un repositorio falso de cursos. Cubren la actualización exitosa del propietario docente, el rechazo de otro docente, el acceso administrativo y el recurso inexistente; nunca se abre una conexión real a PostgreSQL.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
