@@ -87,6 +87,12 @@ npm test -- update-course
 
 Las pruebas usan Arrange/Act/Assert y un repositorio falso de cursos. Cubren la actualización exitosa del propietario docente, el rechazo de otro docente, el acceso administrativo y el recurso inexistente; nunca se abre una conexión real a PostgreSQL.
 
+## Integración continua
+
+El workflow `Quality` se ejecuta en cada push y pull request. Instala las dependencias con `npm ci` a partir de `package-lock.json`, ejecuta Oxlint, pruebas unitarias, pruebas e2e y el build. Las pruebas e2e usan repositorios en memoria y configuración ficticia; no requieren una base PostgreSQL ni secretos de producción.
+
+En pull requests también se ejecuta GitHub Dependency Review para evaluar los cambios de dependencias y bloquear vulnerabilidades nuevas de severidad alta o crítica. Habilita Dependency graph en la configuración del repositorio para que la revisión esté disponible. La auditoría es una señal para revisar y actualizar dependencias deliberadamente, no una justificación para subir versiones al azar.
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
