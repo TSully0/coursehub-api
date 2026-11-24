@@ -131,13 +131,19 @@ describe('HTTP observability', () => {
       .set('Authorization', 'Bearer header-secret')
       .expect(400);
 
-    const loggedMessages = logSpy.mock.calls.map(([message]) => String(message));
-    const requestLog = loggedMessages.find((message) =>
+    const loggedMessages = logSpy.mock.calls.map((call: unknown[]) =>
+      String(call[0]),
+    );
+    const requestLog = loggedMessages.find((message: string) =>
       message.includes('"method":"GET"'),
     );
     expect(requestLog).toContain('"path":"/observability-test/explicit-bad-request"');
     expect(requestLog).toContain('"status":400');
-    expect(loggedMessages.some((message) => message.includes('"durationMs":'))).toBe(true);
+    expect(
+      loggedMessages.some((message: string) =>
+        message.includes('"durationMs":'),
+      ),
+    ).toBe(true);
 
     const allLogs = loggedMessages.join('\n');
     expect(allLogs).not.toContain('header-secret');
